@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slow Letter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Noto+Serif+JP:wght@400;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--a:#f59042;--ink:#1a1a18;--bg:#fff;--f:'Courier Prime',Courier,monospace;}
+html,body{height:100%;}
+body{background:#fff;display:flex;justify-content:center;align-items:stretch;margin:0;}
+.frame{background:#fff;width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;padding:48px 22px 48px;font-family:var(--f);color:#1a1a18;position:relative;}
+.frame.jp{--f:'Noto Serif JP',serif;}
+.frame.kr{--f:'Noto Serif KR',serif;}
+/* JP/KR: Noto Serif 폰트의 넓은 줄높이를 EN(Courier Prime)과 동일하게 맞춤 */
+.frame.jp *,.frame.kr *{line-height:1.2;}
+.frame.jp .atitle,.frame.kr .atitle{font-size:12px;margin-bottom:10px;line-height:1.3;}
+.frame.jp .nav,.frame.kr .nav{font-size:12px;min-height:32px;line-height:1;}
+.frame.jp .lbl,.frame.kr .lbl{font-size:10px;line-height:1.2;margin-bottom:6px;}
+.frame.jp .rt,.frame.kr .rt{font-size:13px;line-height:1.2;}
+.frame.jp .rs,.frame.kr .rs{font-size:10px;line-height:1.2;margin-top:4px;}
+.frame.jp .row,.frame.kr .row{padding:10px 0 7px;min-height:40px;}
+.frame.jp .arc-token-row,.frame.kr .arc-token-row{font-size:11px;line-height:1.2;}
+.frame.jp .arc-notstarted,.frame.kr .arc-notstarted{font-size:11px;line-height:1.3;}
+.frame.jp .arct,.frame.kr .arct{font-size:18px;}
+/* 언어 선택 */
+.lbar{display:flex;width:fit-content;border:0.5px solid #e0e0e0;margin-bottom:14px;}
+.lb{font-family:'Courier Prime',Courier,monospace;font-size:12px;letter-spacing:0.1em;padding:7px 16px;border:none;background:none;cursor:pointer;color:#999;border-right:0.5px solid #e0e0e0;}
+.lb:last-child{border-right:none;}
+.lb.on{background:#1a1a18;color:#fff;}
+.lb:active{opacity:.7;}
+/* 타이틀 & 내비 */
+.atitle{font-size:14px;font-weight:700;letter-spacing:0.05em;margin-bottom:10px;}
+.nav{font-size:13px;cursor:pointer;padding:1px 0;color:#1a1a18;min-height:32px;display:flex;align-items:center;}
+.nav:active{opacity:.6;}
+.hr{border:none;border-top:0.5px solid #ebebeb;margin:8px 0;}
+.lbl{font-size:10px;letter-spacing:0.1em;color:#aaa;margin-bottom:6px;font-family:'Courier Prime',Courier,monospace;}
+/* 리스트 행 */
+.row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;cursor:pointer;border-bottom:none;min-height:40px;}
+.row:active .rt{opacity:.6;}
+.rt{font-size:14px;color:#1a1a18;}
+.rs{font-size:11px;color:#aaa;margin-top:4px;font-family:'Courier Prime',Courier,monospace;}
+.pb{height:1px;background:#f0f0f0;margin-top:6px;position:relative;}
+.pf{height:1px;background:#ccc;position:absolute;top:0;left:0;}
+/* 뒤로가기 */
+.back{font-size:13px;cursor:pointer;color:#aaa;display:inline-flex;align-items:center;min-height:44px;margin-bottom:8px;font-family:'Courier Prime',Courier,monospace;}
+.back:active{opacity:.6;}
+/* 입력 */
+.inp{background:transparent;border:none;border-bottom:0.5px solid #e0e0e0;font-family:var(--f);font-size:14px;color:#1a1a18;outline:none;padding:8px 0;width:100%;}
+.inp::placeholder{color:#ccc;}
+.inp:focus{border-bottom-color:#1a1a18;}
+.ta{background:#fafafa;border:0.5px solid #ebebeb;font-family:var(--f);font-size:13px;color:#1a1a18;outline:none;padding:10px;width:100%;resize:none;line-height:1.75;}
+.ta:focus{border-color:#aaa;}
+/* 버튼 */
+.btn{font-family:'Courier Prime',Courier,monospace;font-size:12px;letter-spacing:0.06em;background:none;border:0.5px solid #bbb;padding:10px 16px;cursor:pointer;color:#1a1a18;min-height:44px;}
+.btn:active{opacity:.7;}
+.btnf{font-family:'Courier Prime',Courier,monospace;font-size:12px;letter-spacing:0.06em;background:#1a1a18;border:none;padding:10px 16px;cursor:pointer;color:#fff;min-height:44px;}
+.btnf:active{opacity:.8;}
+.btna{font-family:'Courier Prime',Courier,monospace;font-size:12px;letter-spacing:0.06em;background:#f59042;border:none;padding:10px 16px;cursor:pointer;color:#fff;min-height:44px;}
+.btna:active{opacity:.8;}
+.acts{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+/* 질문 블록 */
+.qb{padding:12px 0;border-bottom:0.5px solid #f3f3f3;}
+.qn{font-size:11px;letter-spacing:0.1em;color:#aaa;margin-bottom:6px;font-family:'Courier Prime',Courier,monospace;}
+.qt{font-size:14px;line-height:1.8;color:#1a1a18;word-break:break-word;overflow-wrap:break-word;}
+.qt.lk{color:#ccc;}
+.ab{margin-top:10px;background:#fffaf6;border-left:2px solid #f59042;padding:10px 12px;font-size:13px;line-height:1.75;color:#666;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;}
+.toast{background:#1a1a18;color:#fff;font-family:'Courier Prime',Courier,monospace;font-size:12px;padding:10px 18px;text-align:center;margin-top:16px;}
+.cpb{background:none;border:none;font-family:'Courier Prime',Courier,monospace;font-size:12px;color:#bbb;cursor:pointer;padding:4px 0;min-height:44px;display:flex;align-items:center;}
+.cpb:active{color:#1a1a18;}
+.badge{display:inline-block;font-size:10px;letter-spacing:0.06em;padding:2px 6px;border:0.5px solid #f59042;color:#f59042;font-family:'Courier Prime',Courier,monospace;vertical-align:middle;}
+.fnote{font-size:12px;color:#f59042;margin-bottom:14px;font-family:'Courier Prime',Courier,monospace;letter-spacing:0.02em;}
+/* 타이머 */
+.arcw{display:flex;flex-direction:column;align-items:center;position:relative;width:100%;margin-top:0;padding:0;}
+.arc-day{font-size:18px;font-weight:400;color:#f59042;font-family:'Courier Prime',Courier,monospace;line-height:1;margin-top:-50px;margin-bottom:2px;position:relative;z-index:10;}
+#arc-svg{display:block;width:200px;height:90px;}
+.arct{font-size:20px;font-weight:700;letter-spacing:0.05em;font-family:'Courier Prime',Courier,monospace;line-height:1;margin-top:4px!important;position:relative;z-index:10;color:#1a1a18;transition:color .3s;}
+.arct.hastoken{color:#f59042;}
+.arc-tokens{margin-top:16px;display:flex;flex-direction:row;gap:16px;align-items:center;}
+.arc-token-row{font-size:12px;letter-spacing:0.05em;color:#aaa;font-family:'Courier Prime',Courier,monospace;}
+.arc-token-row span{color:#1a1a18;font-weight:700;}
+.arc-token-row span.hi{color:#f59042;}
+.arc-notstarted{font-size:12px;letter-spacing:0.04em;color:#ccc;font-family:'Courier Prime',Courier,monospace;padding:20px 0;text-align:center;}
+/* 스와이프 삭제 */
+.swipe-wrap{position:relative;overflow:hidden;border-bottom:0.5px solid #eee;}
+.swipe-inner{display:flex;align-items:stretch;transition:transform 0.2s ease;touch-action:pan-y;width:calc(100% + 80px);}
+.swipe-del{width:80px;flex-shrink:0;background:#e24b4a;display:flex;align-items:center;justify-content:center;font-family:'Courier Prime',Courier,monospace;font-size:11px;letter-spacing:0.08em;color:#fff;cursor:pointer;}
+
+
+
+
+
+/* onboarding */
+.ob-overlay{position:fixed;inset:0;background:rgba(26,26,24,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;}
+.ob-card{background:#fff;width:100%;max-width:340px;padding:28px 24px 22px;font-family:'Courier Prime',Courier,monospace;display:flex;flex-direction:column;}
+.ob-tag{font-size:10px;letter-spacing:0.14em;color:#f59042;margin-bottom:16px;}
+.ob-title{font-size:20px;font-weight:700;letter-spacing:0.02em;color:#1a1a18;margin-bottom:8px;line-height:1.2;}
+.ob-sub{font-size:12px;color:#aaa;margin-bottom:16px;font-style:italic;line-height:1.5;}
+.ob-body{font-size:11px;color:#444;line-height:1.9;letter-spacing:0.01em;}
+.ob-footer{display:flex;justify-content:space-between;align-items:center;margin-top:22px;}
+.ob-dots{display:flex;gap:5px;align-items:center;}
+.ob-dot{width:18px;height:2px;background:#eee;transition:background .3s;}
+.ob-dot.active{background:#1a1a18;}
+.ob-next{background:none;border:none;cursor:pointer;color:#1a1a18;font-size:20px;padding:6px 0 6px 12px;font-family:'Courier Prime',Courier,monospace;line-height:1;}
+.ob-skip{font-size:10px;letter-spacing:0.08em;color:#bbb;cursor:pointer;background:none;border:none;font-family:'Courier Prime',Courier,monospace;padding:0;}
+</style>
+</head>
+<body>
+<div class="frame" id="root"></div>
+<script>
+const WAIT=864e5, AC='#f59042';
+
+/* ── i18n ── */
+const TR={
+en:{
+  app:'SLOW LETTER',newBox:'[+] NEW LETTER',imp:'[+] IMPORT CODE',
+  inbox:'INBOX',sent:'SENT',empty:'— EMPTY —',opened:'OPENED',
+  qs:'QUESTIONS',rr:'REPLIES READ',back:'[←] BACK',
+  nbTitle:'NEW BOX',titleLbl:'TITLE',titlePh:'YOUR TITLE',
+  qsLbl:'QUESTIONS',addQ:'+ ADD',create:'CREATE [→]',cancel:'CANCEL',
+  modeQ:'Questions',modeLetter:'Letter',
+  modeQDesc:'Up to 10 questions, one revealed per day.',
+  modeLetterDesc:'Free writing up to 300 characters.',
+  charLeft:(n)=>`${n} chars left`,
+  impTitle:'IMPORT',impSub:'Paste a box code or reply code.',
+  codePh:'PASTE CODE...',confirm:'CONFIRM [→]',
+  fm:'First Mail',fnote:'No wait time — recipient can answer freely.',
+  ffixed:'Title is fixed for your first letter.',
+  qnum:'QUESTION',openNow:'OPEN NOW',openWait:'OPEN [→]',
+  locked:'[ LOCKED ]',sealed:'[ SEALED ]',
+  yourAns:'YOUR ANSWER',writePh:'Write your answer...',saveAns:'SAVE ANSWER',
+  allAns:'ALL ANSWERED',expReply:'COPY REPLY CODE [↗]',
+  copyBox:'COPY BOX CODE [↗]',readReply:'READ REPLY [→]',
+  noReply:'[ NO REPLY YET ]',repWait:'[ OPEN PREVIOUS FIRST ]',
+  timerLbl:'TIME UNTIL NEXT',
+  noToken_w:'No write tokens — wait for the next cycle.',
+  noToken_r:'No read tokens — wait for the next cycle.',
+  notStarted:'Timer starts when you open your first received letter.',
+  dayLabel:(n)=>`Day ${n}`,
+  tokenWrite:(n)=>`Write: ${n}`,
+  tokenRead:(n)=>`Read: ${n}`,
+  allOpened:'ALL ANSWERED',inboxList:'INBOX',sentList:'SENT',
+  already:'ALREADY IN INBOX',merged:'REPLIES MERGED',arrived:'BOX ARRIVED',
+  invalid:'INVALID CODE',maxQ:'MAX 10',noTitle:'ENTER A TITLE',
+  noQ:'ADD QUESTIONS',fillQ:'FILL ALL QUESTIONS',
+  writeSth:'WRITE SOMETHING FIRST',saved:'ANSWER SAVED',copied:'CODE COPIED',newReply:'[+] NEW REPLY',
+  delQ:'Delete this letter?',delYes:'Yes, delete',delNo:'Cancel'
+},
+jp:{
+  app:'明日の手紙',newBox:'[+] 新しい手紙',imp:'[+] コード読込',
+  inbox:'受信箱',sent:'送信済み',empty:'— 空です —',opened:'開封',
+  qs:'質問',rr:'返信既読',back:'[←] 戻る',
+  nbTitle:'新しい質問封筒',titleLbl:'タイトル',titlePh:'タイトルを入力',
+  qsLbl:'質問',addQ:'+ 追加',create:'作成 [→]',cancel:'キャンセル',
+  modeQ:'質問形式',modeLetter:'手紙形式',
+  modeQDesc:'最大10問、1日1問ずつ開封。',
+  modeLetterDesc:'300文字まで自由に書けます。',
+  charLeft:(n)=>`残り${n}文字`,
+  impTitle:'読み込む',impSub:'封筒コードまたは返信コードを貼り付けてください。',
+  codePh:'コードを貼り付け...',confirm:'確認 [→]',
+  fm:'最初の手紙',fnote:'待ち時間なし — 相手がすぐ答えられます。',
+  ffixed:'タイトルは自動で設定されます。',
+  qnum:'質問',openNow:'今すぐ開く',openWait:'開封 [→]',
+  locked:'[ 鍵がかかっています ]',sealed:'[ 封印されています ]',
+  yourAns:'あなたの返答',writePh:'返答を書いてください...',saveAns:'保存する',
+  allAns:'すべて回答済み',expReply:'返信コードをコピー [↗]',
+  copyBox:'封筒コードをコピー [↗]',readReply:'返信を読む [→]',
+  noReply:'[ 返信はまだありません ]',repWait:'[ 前の項目を先に開いてください ]',
+  timerLbl:'次まであと',
+  noToken_w:'作成権がありません — 次のサイクルをお待ちください。',
+  noToken_r:'閲覧権がありません — 次のサイクルをお待ちください。',
+  notStarted:'最初の受信封筒を開いた時点からタイマーが始まります。',
+  dayLabel:(n)=>`${n} 日目`,
+  tokenWrite:(n)=>`作成権: ${n}`,
+  tokenRead:(n)=>`閲覧権: ${n}`,
+  allOpened:'すべて回答済み',inboxList:'受信箱',sentList:'送信済み',
+  already:'受信済みです',merged:'返信を統合しました',arrived:'封筒が届きました',
+  invalid:'無効なコードです',maxQ:'最大10問',noTitle:'タイトルを入力してください',
+  noQ:'質問を追加してください',fillQ:'すべての質問を入力してください',
+  writeSth:'まず何か書いてください',saved:'保存しました',copied:'コピーしました',newReply:'[+] 新しい返信',
+  delQ:'この手紙を削除しますか？',delYes:'削除する',delNo:'キャンセル'
+},
+kr:{
+  app:'느린우체통',newBox:'[+] 새 편지',imp:'[+] 코드 가져오기',
+  inbox:'받은 편지함',sent:'보낸 편지함',empty:'— 비어있어요 —',opened:'열람',
+  qs:'질문',rr:'답변 열람',back:'[←] 뒤로',
+  nbTitle:'새 질문 상자',titleLbl:'제목',titlePh:'제목을 입력하세요',
+  qsLbl:'질문',addQ:'+ 추가',create:'만들기 [→]',cancel:'취소',
+  modeQ:'질문 형식',modeLetter:'편지 형식',
+  modeQDesc:'최대 10개 질문, 하루 1개씩 열람.',
+  modeLetterDesc:'300자까지 자유롭게 쓸 수 있어요.',
+  charLeft:(n)=>`${n}자 남음`,
+  impTitle:'가져오기',impSub:'받은 코드 또는 답변 코드를 붙여넣으세요.',
+  codePh:'코드를 붙여넣으세요...',confirm:'확인 [→]',
+  fm:'처음 보내는 편지',fnote:'대기 시간 없음 — 상대방이 바로 답변할 수 있어요.',
+  ffixed:'제목은 자동으로 설정돼요.',
+  qnum:'질문',openNow:'지금 열기',openWait:'열람 [→]',
+  locked:'[ 잠겨 있어요 ]',sealed:'[ 봉인되어 있어요 ]',
+  yourAns:'당신의 답변',writePh:'답변을 적어주세요...',saveAns:'저장하기',
+  allAns:'모두 답변 완료',expReply:'답변 코드 복사 [↗]',
+  copyBox:'편지 코드 복사 [↗]',readReply:'답변 읽기 [→]',
+  noReply:'[ 아직 답변이 없어요 ]',repWait:'[ 이전 항목을 먼저 여세요 ]',
+  timerLbl:'다음 열람까지',
+  noToken_w:'작성권이 없어요 — 다음 사이클을 기다려주세요.',
+  noToken_r:'열람권이 없어요 — 다음 사이클을 기다려주세요.',
+  notStarted:'첫 번째 받은 편지를 열면 타이머가 시작돼요.',
+  dayLabel:(n)=>`${n}일째`,
+  tokenWrite:(n)=>`작성권: ${n}`,
+  tokenRead:(n)=>`열람권: ${n}`,
+  allOpened:'모두 답변 완료',inboxList:'받은 편지함',sentList:'보낸 편지함',
+  already:'이미 받은 편지함에 있어요',merged:'답변이 병합되었어요',arrived:'편지 상자가 도착했어요',
+  invalid:'유효하지 않은 코드예요',maxQ:'최대 10개',noTitle:'제목을 입력하세요',
+  noQ:'질문을 추가하세요',fillQ:'모든 질문을 입력하세요',
+  writeSth:'먼저 내용을 작성하세요',saved:'저장되었어요',copied:'코드가 복사되었어요',newReply:'[+] 새 답변',
+  delQ:'이 편지를 삭제할까요?',delYes:'네, 삭제',delNo:'아니오'
+}
+};
+
+let lang='en';
+let S={view:'home',sub:null,letters:{sent:[],received:[]},toast:null,_tt:null,createMode:'q',confirm:null};
+/* G = global timer state persisted in localStorage */
+let G={timerStart:null, writeTokens:0, readTokens:0};
+let _al=null;
+
+const t=k=>TR[lang][k];
+const tc=(k,...a)=>{const v=TR[lang][k];return typeof v==='function'?v(...a):v;};
+const fmNames=()=>['First Mail','最初の手紙','처음 보내는 편지','明日の手紙','느린우체통','첫 번째 편지'];
+const isFM=title=>fmNames().includes(title);
+
+
+/* ── Onboarding ── */
+const OB_PAGES = [
+  {
+    tag:'01 / 06',
+    title:'Slow Letter',
+    sub:'"천천히, 서로에게 스며드는 시간"',
+    body:'「Slow letter」는 24시간의 기다림을 통해 상대의 생각을 하나씩 꺼내 보는 설렘을 선물합니다.\n하루에 하나씩 잠금이 해제되는 질문을 통해, 상대의 생각을 차분히 마주해 보세요.\n서두르지 않아도 괜찮습니다. 적당한 간격이 주는 즐거움이 우리를 더 가깝게 만들 테니까요.'
+  },
+  {
+    tag:'02 / 06',
+    title:'New Letter',
+    sub:'"질문의 시작"',
+    body:'New Letter에서 상대에게 보내고 싶은 질문 리스트를 작성하세요.\n작성이 완료되면 고유 코드가 생성됩니다. 이 코드를 복사해서 상대에게 전달하면 준비는 끝납니다.\n내가 보낸 질문들은 Sent 보관함에서 언제든 다시 확인할 수 있습니다.'
+  },
+  {
+    tag:'03 / 06',
+    title:'Import Code',
+    sub:'"코드 입력"',
+    body:'상대에게 받은 코드를 Import 메뉴에 입력하세요.\n이제 해당 편지는 당신의 Inbox에 보관됩니다.\n앱 하단의 타이머는 당신이 답변하거나 읽을 수 있는 다음 기점을 가리키기 시작합니다.'
+  },
+  {
+    tag:'04 / 06',
+    title:'24 Hours',
+    sub:'"하루에 하나씩"',
+    body:'질문지를 받으면 24시간에 하나씩만 답변을 작성할 수 있습니다.\n4개의 질문이 담긴 편지라면, 완성까지는 최소 4일의 시간이 필요합니다.\n쌓여가는 답변만큼 서로에 대해 더 깊이 이해하는 시간을 가져보세요.'
+  },
+  {
+    tag:'05 / 06',
+    title:'Reply',
+    sub:'"되돌아오는 진심"',
+    body:'모든 답변을 마치면 다시 코드를 생성해 상대에게 전달하세요.\n상대가 코드를 입력하면, 당신은 Sent 보관함에서 상대의 답변을 읽을 수 있게 됩니다.\n답변을 읽을 때도 동일하게 하루에 하나씩만 잠금이 해제됩니다.'
+  },
+  {
+    tag:'06 / 06',
+    title:'First Mail',
+    sub:'"시작의 예외, First Mail"',
+    body:'가장 처음 주고받는 편지는 제목이 First Mail로 고정됩니다.\n이 편지에 한해서만 대기 시간 없이 모든 질문에 즉시 답변할 수 있습니다.\n단, 전해 받은 답변을 읽을 때는 다시 24시간의 간격이 적용됩니다.'
+  }
+];
+
+let obPage = 0;
+
+function showOnboarding(){
+  if(localStorage.getItem('sl_ob_done')) return;
+  renderOb();
+}
+
+function renderOb(){
+  const existing = document.getElementById('ob-overlay');
+  if(existing) existing.remove();
+
+  const p = OB_PAGES[obPage];
+  const total = OB_PAGES.length;
+  const isLast = obPage === total - 1;
+
+  const dots = OB_PAGES.map((_,i) =>
+    `<div class="ob-dot${i===obPage?' active':''}"></div>`
+  ).join('');
+
+  const el = document.createElement('div');
+  el.id = 'ob-overlay';
+  el.className = 'ob-overlay';
+  el.innerHTML = `<div class="ob-card">
+    <div class="ob-tag">${p.tag}</div>
+    <div class="ob-title">${p.title}</div>
+    <div class="ob-sub">${p.sub}</div>
+    <div class="ob-body">${p.body.replace(/\n/g,'<br>')}</div>
+    <div class="ob-footer">
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
+        <div class="ob-dots">${dots}</div>
+        <button class="ob-skip" onclick="closeOb()">${isLast?'시작하기':'건너뛰기'}</button>
+      </div>
+      ${!isLast?`<button class="ob-next" onclick="obNext()">→</button>`:''}
+    </div>
+  </div>`;
+  document.body.appendChild(el);
+}
+
+function obNext(){
+  if(obPage < OB_PAGES.length - 1){ obPage++; renderOb(); }
+}
+
+function closeOb(){
+  const el = document.getElementById('ob-overlay');
+  if(el) el.remove();
+  localStorage.setItem('sl_ob_done','1');
+}
+
+/* ── Storage ── */
+function lsLoad(){
+  try{
+    const d=localStorage.getItem('sl_v4');
+    if(d){
+      const p=JSON.parse(d);
+      S.letters=p.letters||{sent:[],received:[]};
+      lang=p.lang||'en';
+      G=Object.assign({timerStart:null,writeTokens:0,readTokens:0}, p.G||{});
+    }
+  }catch(e){}
+}
+function lsSave(){
+  try{localStorage.setItem('sl_v4',JSON.stringify({letters:S.letters,lang,G}));}catch(e){}
+}
+
+/* ── Toast ── */
+function showToast(msg){
+  clearTimeout(S._tt);S.toast=msg;render();
+  S._tt=setTimeout(()=>{S.toast=null;render();},2600);
+}
+function go(v,s=null){S.view=v;S.sub=s;render();}
+function setLang(l){lang=l;lsSave();render();}
+
+/* ══════════ TIMER & TOKEN LOGIC ══════════ */
+
+/*
+  G.timerStart  : timestamp — set when user first unlocks a question in a received letter
+  G.writeTokens : accumulated write tokens (answer a question)
+  G.readTokens  : accumulated read tokens (read a reply)
+
+  Every 24h since timerStart, +1 to each pool.
+  Tokens are consumed on use and never go below 0.
+  First Mail exception: write tokens NOT consumed (FM is free).
+  Reading replies from FM still consumes read tokens.
+*/
+
+function syncTokens(){
+  if(!G.timerStart) return;
+  const now=Date.now();
+  const elapsed=now-G.timerStart;
+  /* total cycles that have completed since timer start */
+  const totalCycles=Math.floor(elapsed/WAIT);
+  /* cycles already accounted for = total tokens ever granted - current held tokens
+     We track this via G.cyclesGranted */
+  if(G.cyclesGranted===undefined) G.cyclesGranted=0;
+  const newCycles=totalCycles-G.cyclesGranted;
+  if(newCycles>0){
+    G.writeTokens+=newCycles;
+    G.readTokens+=newCycles;
+    G.cyclesGranted+=newCycles;
+    lsSave();
+  }
+}
+
+function msUntilNextToken(){
+  if(!G.timerStart) return null;
+  const elapsed=Date.now()-G.timerStart;
+  const nextCycle=(Math.floor(elapsed/WAIT)+1)*WAIT;
+  return nextCycle-elapsed;
+}
+
+function dayNumber(){
+  if(!G.timerStart) return 0;
+  return Math.floor((Date.now()-G.timerStart)/WAIT)+1;
+}
+
+function startTimerIfNeeded(){
+  if(!G.timerStart){
+    G.timerStart=Date.now();
+    /* grant first token immediately on day 1 */
+    G.writeTokens=1;
+    G.readTokens=1;
+    G.cyclesGranted=1;
+    lsSave();
+  }
+}
+
+/* ── Unlock question (consumes writeToken, except FM) ── */
+function doUnlock(lIdx,qIdx){
+  syncTokens();
+  const ls=[...S.letters.received];
+  const l={...ls[lIdx],questions:ls[lIdx].questions.map(q=>({...q}))};
+  const fm=isFM(l.title);
+
+  if(!fm){
+    if(G.writeTokens<1){showToast(t('noToken_w'));return;}
+    G.writeTokens--;
+    lsSave();
+  }
+
+  l.questions[qIdx].unlockedAt=Date.now();
+  ls[lIdx]=l;
+  S.letters={...S.letters,received:ls};
+  lsSave();render();
+}
+
+/* ── Read reply (consumes readToken) ── */
+function doReadReply(lIdx,qIdx){
+  syncTokens();
+  if(G.readTokens<1){showToast(t('noToken_r'));return;}
+  G.readTokens--;
+
+  const ls=[...S.letters.sent];
+  const l={...ls[lIdx],questions:ls[lIdx].questions.map(q=>({...q}))};
+  l.questions[qIdx].replyReadAt=Date.now();
+  ls[lIdx]=l;
+  S.letters={...S.letters,sent:ls};
+  lsSave();render();
+}
+
+/* ── Save answer text ── */
+function saveAnswer(lIdx,qIdx,text){
+  const ls=[...S.letters.received];
+  const l={...ls[lIdx],questions:ls[lIdx].questions.map(q=>({...q}))};
+  l.questions[qIdx].answer=text;
+  ls[lIdx]=l;
+  S.letters={...S.letters,received:ls};lsSave();
+}
+function saveAnsUI(lIdx,qIdx){
+  const el=document.getElementById(`ans-${qIdx}`);
+  if(!el||!el.value.trim()){showToast(t('writeSth'));return;}
+  saveAnswer(lIdx,qIdx,el.value.trim());showToast(t('saved'));
+}
+
+/* ══════════ ARC WIDGET ══════════ */
+function fmt(ms){
+  if(ms<=0)return'00:00:00';
+  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  return[h,m,sc].map(v=>String(v).padStart(2,'0')).join(':');
+}
+
+function drawArc(){
+  syncTokens();
+  const svg=document.getElementById('arc-svg');
+  if(!svg) return;
+
+  const ms=msUntilNextToken();
+  const hasTokens=(G.writeTokens>0||G.readTokens>0);
+  let pct=1;
+  if(ms!==null) pct=1-(ms/WAIT);
+
+  /* viewBox "0 0 240 100", cy=100 → 반원 바닥이 캔버스 정확히 하단 */
+  const cx=120, cy=100, R=90, tr=97;
+  const da=Math.PI-pct*Math.PI;
+  const dx=(cx+R*Math.cos(da)).toFixed(1);
+  const dy=(cy-R*Math.sin(da)).toFixed(1);
+  let tks='';
+  for(let i=0;i<=28;i++){
+    const a=Math.PI-(i/28)*Math.PI, ln=i%7===0?8:4;
+    const ix=(cx+tr*Math.cos(a)).toFixed(1), iy=(cy-tr*Math.sin(a)).toFixed(1);
+    const ox=(cx+(tr+ln)*Math.cos(a)).toFixed(1), oy=(cy-(tr+ln)*Math.sin(a)).toFixed(1);
+    tks+=`<line x1="${ix}" y1="${iy}" x2="${ox}" y2="${oy}" stroke="#ddd" stroke-width="1"/>`;
+  }
+  svg.setAttribute('viewBox','0 0 240 100');
+  svg.innerHTML=`${tks}
+    <path d="M${cx-R} ${cy} A${R} ${R} 0 0 1 ${cx+R} ${cy}" fill="none" stroke="#ebebeb" stroke-width="1"/>
+    <circle cx="${dx}" cy="${dy}" r="5.5" fill="${AC}" opacity="${G.timerStart?1:0.25}"/>`;
+
+  /* DOM 텍스트 업데이트 */
+  const tel=document.getElementById('arc-t');
+  const dayEl=document.getElementById('arc-day');
+  const timeStr=ms!==null?fmt(ms):'— : — : —';
+  if(tel){
+    tel.textContent=timeStr;
+    tel.className='arct'+(hasTokens?' hastoken':'');
+  }
+  if(dayEl){
+    if(G.timerStart){
+      dayEl.textContent=String(dayNumber());
+      dayEl.style.display='block';
+    } else {
+      dayEl.style.display='none';
+    }
+  }
+}
+
+function arcWidget(){
+  syncTokens();
+  const hasTokens=(G.writeTokens>0||G.readTokens>0);
+  const wColor=G.writeTokens>0?'hi':'';
+  const rColor=G.readTokens>0?'hi':'';
+
+  if(!G.timerStart){
+    return`<div class="arcw">
+      <div class="arc-notstarted">${t('notStarted')}</div>
+    </div>`;
+  }
+
+  return`<div class="arcw">
+    <svg id="arc-svg" viewBox="0 0 240 100"></svg>
+    <div id="arc-day" class="arc-day" style="display:none;"></div>
+    <div id="arc-t" class="arct">— : — : —</div>
+    <div class="arc-tokens">
+      <div class="arc-token-row">${tc('tokenWrite','')} <span class="${wColor}">${G.writeTokens}</span></div>
+      <div class="arc-token-row">${tc('tokenRead','')} <span class="${rColor}">${G.readTokens}</span></div>
+    </div>
+  </div>`;
+}
+
+/* ══════════ COPY / IMPORT ══════════ */
+/* ── 코드 압축: 필드 단축 + DeflateRaw(브라우저 내장) ── */
+function deflate(obj){
+  const qs=(obj.questions||[]).map(q=>({
+    t:q.text,
+    ...(q.answer?{a:q.answer}:{}),
+    ...(q.isLetter?{l:1}:{})
+  }));
+  return {i:obj.id,ti:obj.title,q:qs,c:obj.createdAt,tp:obj.type||'q'};
+}
+function inflate(obj){
+  if(obj.questions) return obj;
+  return {
+    id:obj.i,title:obj.ti,createdAt:obj.c,type:obj.tp||'q',
+    questions:(obj.q||[]).map(q=>({
+      text:q.t,answer:q.a||'',unlockedAt:null,replyReadAt:null,
+      ...(q.l?{isLetter:true}:{})
+    }))
+  };
+}
+const B85C='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~';
+function b85enc(buf){
+  let r='',i=0;
+  while(i<buf.length){
+    let v=0,chunk=Math.min(4,buf.length-i);
+    for(let j=0;j<4;j++) v=v*256+(j<chunk?buf[i+j]:0);
+    let s='';
+    for(let j=0;j<5;j++){s=B85C[v%85]+s;v=Math.floor(v/85);}
+    r+=s.slice(0,chunk+1);
+    i+=4;
+  }
+  return r;
+}
+function b85dec(str){
+  const out=[];
+  let i=0;
+  while(i<str.length){
+    const chunk=Math.min(5,str.length-i);
+    let v=0;
+    for(let j=0;j<5;j++) v=v*85+(j<chunk?B85C.indexOf(str[i+j]):84);
+    const bytes=chunk-1;
+    for(let j=3;j>=4-bytes;j--) out.push((v>>(j*8))&0xff);
+    i+=5;
+  }
+  return new Uint8Array(out);
+}
+async function compress(str){
+  const enc=new TextEncoder().encode(str);
+  const cs=new CompressionStream('deflate-raw');
+  const w=cs.writable.getWriter();
+  w.write(enc);w.close();
+  const chunks=[];
+  const reader=cs.readable.getReader();
+  while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);}
+  const buf=new Uint8Array(chunks.reduce((a,b)=>a+b.length,0));
+  let off=0;for(const ch of chunks){buf.set(ch,off);off+=ch.length;}
+  return b85enc(buf);
+}
+async function decompress(code){
+  const b64=code.replace(/-/g,'+').replace(/_/g,'/');
+  const bin=atob(b64);
+  const buf=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
+  const ds=new DecompressionStream('deflate-raw');
+  const w=ds.writable.getWriter();
+  w.write(buf);w.close();
+  const chunks=[];
+  const reader=ds.readable.getReader();
+  while(true){const{done,value}=await reader.read();if(done)break;chunks.push(value);}
+  return new TextDecoder().decode(new Uint8Array(chunks.reduce((a,b)=>a+b.length,0)).fill(0).map((_,i)=>{
+    let off=0;for(const ch of chunks){if(i<off+ch.length)return ch[i-off];off+=ch.length;}return 0;
+  }));
+}
+async function decompressFull(code){
+  let buf;
+  /* b85: 첫 문자가 B85C에 있고 base64 문자가 아닌 경우 */
+  const isB85=B85C.includes(code[0])&&!/^[A-Za-z0-9+/=_-]+$/.test(code)||code.includes('!');
+  if(isB85){
+    buf=b85dec(code);
+  } else {
+    const b64=code.replace(/-/g,'+').replace(/_/g,'/');
+    const bin=atob(b64);
+    buf=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)buf[i]=bin.charCodeAt(i);
+  }
+  const ds=new DecompressionStream('deflate-raw');
+  const w=ds.writable.getWriter();w.write(buf);w.close();
+  const parts=[];
+  const reader=ds.readable.getReader();
+  while(true){const{done,value}=await reader.read();if(done)break;parts.push(value);}
+  const total=parts.reduce((s,p)=>s+p.length,0);
+  const out=new Uint8Array(total);
+  let o=0;for(const p of parts){out.set(p,o);o+=p.length;}
+  return new TextDecoder().decode(out);
+}
+async function copyCode(obj){
+  const json=JSON.stringify(deflate(obj));
+  const code=await compress(json);
+  if(navigator.clipboard&&window.isSecureContext){
+    navigator.clipboard.writeText(code).then(()=>showToast(t('copied'))).catch(()=>fallbackCopy(code));
+  } else { fallbackCopy(code); }
+}
+function fallbackCopy(text){
+  const el=document.createElement('textarea');
+  el.value=text;el.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(el);el.focus();el.select();
+  try{document.execCommand('copy');showToast(t('copied'));}
+  catch(e){prompt('코드를 복사하세요:',text);}
+  document.body.removeChild(el);
+}
+async function doImport(){
+  const raw=document.getElementById('imp-in')?.value||'';
+  try{
+    const raw2=raw.trim();
+    let parsed;
+    try{
+      /* 신형: deflate-raw 압축 */
+      const jsonStr=await decompressFull(raw2);
+      parsed=JSON.parse(jsonStr);
+    }catch(e2){
+      /* 구형: encodeURIComponent+btoa */
+      parsed=JSON.parse(decodeURIComponent(atob(raw2)));
+    }
+    const dec=inflate(parsed);
+    const hasAns=dec.questions&&dec.questions.some(q=>q.answer);
+    if(hasAns){
+      const idx=S.letters.sent.findIndex(l=>l.id===dec.id||(l.title===dec.title&&l.questions.length===dec.questions.length));
+      if(idx>=0){
+        const upd={...S.letters.sent[idx],questions:S.letters.sent[idx].questions.map((q,i)=>({...q,answer:dec.questions[i]?.answer||q.answer||''}))};
+        const sent=[...S.letters.sent];sent[idx]=upd;
+        S.letters={...S.letters,sent};lsSave();showToast(t('merged'));go('home');return;
+      }
+    }
+    if(S.letters.received.find(l=>l.id===dec.id)){showToast(t('already'));return;}
+    const rec={...dec,type:'received',importedAt:Date.now()};
+    S.letters={...S.letters,received:[rec,...S.letters.received]};
+    lsSave();showToast(t('arrived'));go('home');
+  }catch(e){showToast(t('invalid'));}
+}
+
+/* ══════════ CREATE ══════════ */
+function addQ(){
+  const list=document.getElementById('q-list');if(!list)return;
+  const i=list.children.length;if(i>=10){showToast(t('maxQ'));return;}
+  const d=document.createElement('div');d.style.cssText='display:flex;gap:8px;align-items:center;';
+  d.innerHTML=`<span style="font-size:10px;color:#ccc;min-width:18px;font-family:'Courier Prime',Courier,monospace;">${String(i+1).padStart(2,'0')}</span>
+    <input class="inp" style="flex:1;" placeholder="${t('qnum')} ${i+1}" />`;
+  list.appendChild(d);
+}
+function submitCreate(){
+  const isFirst=S.letters.sent.length===0;
+  const title=isFirst?TR[lang].fm:(document.getElementById('c-title')?.value||'').trim();
+  if(!isFirst&&!title){showToast(t('noTitle'));return;}
+  let questions=[];
+  if(!isFirst&&S.createMode==='letter'){
+    const body=(document.getElementById('letter-body')?.value||'').trim();
+    if(!body){showToast(t('writeSth'));return;}
+    if(body.length>300){showToast('300');return;}
+    questions=[{text:body,unlockedAt:null,answer:'',replyReadAt:null,isLetter:true}];
+  } else {
+    const inputs=document.getElementById('q-list')?.querySelectorAll('input')||[];
+    if(!inputs.length){showToast(t('noQ'));return;}
+    const qs=Array.from(inputs).map(i=>i.value.trim());
+    if(qs.some(q=>!q)){showToast(t('fillQ'));return;}
+    questions=qs.map(q=>({text:q,unlockedAt:null,answer:'',replyReadAt:null}));
+  }
+  const letter={id:Date.now(),title,questions,createdAt:Date.now(),type:S.createMode};
+  S.letters={...S.letters,sent:[letter,...S.letters.sent]};
+  lsSave();go('home');
+}
+function setCreateMode(mode){
+  S.createMode=mode;
+  render();
+}
+function updateCharCount(){
+  const el=document.getElementById('letter-body');
+  const ct=document.getElementById('char-count');
+  if(!el||!ct)return;
+  const left=300-el.value.length;
+  ct.textContent=tc('charLeft',left<0?0:left);
+  ct.style.color=left<0?'#e24b4a':'#bbb';
+}
+
+/* ══════════ LANG BAR ══════════ */
+function lbar(){
+  return`<div class="lbar">
+    <button class="lb${lang==='en'?' on':''}" onclick="setLang('en')">EN</button>
+    <button class="lb${lang==='jp'?' on':''}" onclick="setLang('jp')">JP</button>
+    <button class="lb${lang==='kr'?' on':''}" onclick="setLang('kr')">KR</button>
+  </div>`;
+}
+
+/* ══════════ VIEWS ══════════ */
+function previewRow(l, i, type){
+  if(type==='received'){
+    const done=l.questions.filter(q=>q.unlockedAt).length, tot=l.questions.length;
+    const pct=Math.round(done/tot*100);
+    return`<div class="row" style="padding:12px 0;" onclick="openReceived(${i})">
+      <div style="flex:1;">
+        <div class="rt">${l.title}${isFM(l.title)?` <span class="badge">FIRST</span>`:''}</div>
+        <div class="rs" style="margin-top:8px;">${done}/${tot} ${t('opened')}</div>
+      </div>
+      <span style="font-size:12px;color:#bbb;margin-left:11px;">[→]</span>
+    </div>`;
+  } else {
+    const hasUnread=l.questions&&l.questions.some(q=>q.answer&&!q.replyReadAt);
+    const totalQ=l.questions?l.questions.length:0;
+    return`<div class="row" style="padding:12px 0 44px;" onclick="go('view-s',${i})">
+      <div style="flex:1;">
+        <div class="rt">${l.title}</div>
+        <div class="rs" style="margin-top:8px;${hasUnread?'color:#f59042;':''}">${totalQ} ${t('qs')}${hasUnread?` · ${t('newReply')}`:''}</div>
+      </div>
+      <span style="font-size:12px;color:#bbb;margin-left:11px;">[→]</span>
+    </div>`;
+  }
+}
+
+function renderHome(){
+  const{sent,received}=S.letters;
+  const latestR=received[0], latestS=sent[0];
+  return`${lbar()}
+<div class="atitle">${t('app')}</div>
+<div class="nav" onclick="go('create')">${t('newBox')}</div>
+<div class="nav" onclick="go('import')">${t('imp')}</div>
+<div class="hr"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+  <div class="lbl" style="margin-bottom:0;">${t('inbox')} — ${received.length}</div>
+  ${received.length>0?`<span style="font-size:11px;color:#bbb;cursor:pointer;font-family:'Courier Prime',Courier,monospace;" onclick="go('inbox')">${t('inboxList')} [→]</span>`:''}
+</div>
+${latestR
+  ? previewRow(latestR, 0, 'received')
+  : `<div style="font-size:12px;color:#ccc;padding:8px 0;">${t('empty')}</div>`}
+<div class="hr" style="margin:20px 0;"></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+  <div class="lbl" style="margin-bottom:0;">${t('sent')} — ${sent.length}</div>
+  ${sent.length>0?`<span style="font-size:11px;color:#bbb;cursor:pointer;font-family:'Courier Prime',Courier,monospace;" onclick="go('sent-list')">${t('sentList')} [→]</span>`:''}
+</div>
+${latestS
+  ? previewRow(latestS, 0, 'sent')
+  : `<div style="font-size:12px;color:#ccc;padding:8px 0;">${t('empty')}</div>`}
+<div class="hr"></div>
+${arcWidget()}
+${S.toast?`<div class="toast">${S.toast}</div>`:''}`;
+}
+
+/* open received letter — starts timer on first open */
+function openReceived(idx){
+  startTimerIfNeeded();
+  go('view-r',idx);
+}
+
+/* ── 삭제 확인 다이얼로그 ── */
+function askDelete(type, id){
+  S.confirm={type, id};
+  render();
+}
+function confirmYes(){
+  if(!S.confirm) return;
+  const {type, id} = S.confirm;
+  S.confirm = null;
+  const arr = type==='received' ? [...S.letters.received] : [...S.letters.sent];
+  const idx = arr.findIndex(l=>String(l.id)===String(id));
+  if(idx>=0) arr.splice(idx,1);
+  if(type==='received') S.letters={...S.letters,received:arr};
+  else S.letters={...S.letters,sent:arr};
+  lsSave();
+  location.reload();
+}
+function confirmNo(){
+  S.confirm=null;
+  resetSwipes();
+  render();
+}
+function deleteLetter(type,idx){
+  if(type==='received'){
+    const letters=[...S.letters.received];letters.splice(idx,1);
+    S.letters={...S.letters,received:letters};
+  } else {
+    const letters=[...S.letters.sent];letters.splice(idx,1);
+    S.letters={...S.letters,sent:letters};
+  }
+  lsSave();render();
+}
+
+/* ── 스와이프 초기화 ── */
+function resetSwipes(){
+  document.querySelectorAll('.swipe-inner').forEach(el=>{el.style.transform='';});
+}
+
+/* ── 스와이프 이벤트 바인딩 ── */
+function bindSwipes(){
+  document.querySelectorAll('.swipe-wrap').forEach(wrap=>{
+    const inner=wrap.querySelector('.swipe-inner');
+    if(!inner||inner._bound)return;
+    inner._bound=true;
+    const onSwipeDone=()=>{
+      /* 스와이프 완료 → 바로 확인창 */
+      const delBtn=wrap.querySelector('.swipe-del');
+      if(delBtn) delBtn.click();
+    };
+    let startX=0,startY=0,dx=0,swiping=false,locked=false;
+    /* 터치 */
+    inner.addEventListener('touchstart',e=>{
+      startX=e.touches[0].clientX;
+      startY=e.touches[0].clientY;
+      dx=0;swiping=false;locked=false;
+    },{passive:true});
+    inner.addEventListener('touchmove',e=>{
+      const mx=e.touches[0].clientX-startX;
+      const my=e.touches[0].clientY-startY;
+      if(!locked){
+        if(Math.abs(my)>Math.abs(mx)){swiping=false;locked=true;return;}
+        if(Math.abs(mx)>6){swiping=true;locked=true;}
+      }
+      if(!swiping)return;
+      dx=Math.min(0,mx);
+      inner.style.transform=`translateX(${Math.max(-72,dx)}px)`;
+    },{passive:true});
+    inner.addEventListener('touchend',()=>{
+      if(!swiping)return;
+      if(dx<-50){
+        inner.style.transform='translateX(-72px)';
+        setTimeout(onSwipeDone,150);
+      } else {
+        inner.style.transform='';
+      }
+    });
+    /* 마우스 */
+    inner.addEventListener('mousedown',e=>{startX=e.clientX;dx=0;swiping=false;locked=false;});
+    inner.addEventListener('mousemove',e=>{
+      if(e.buttons!==1)return;
+      if(!locked){
+        if(Math.abs(e.clientX-startX)>6){swiping=true;locked=true;}
+      }
+      if(!swiping)return;
+      dx=Math.min(0,e.clientX-startX);
+      inner.style.transform=`translateX(${Math.max(-72,dx)}px)`;
+    });
+    inner.addEventListener('mouseup',()=>{
+      if(!swiping)return;swiping=false;
+      if(dx<-50){
+        inner.style.transform='translateX(-72px)';
+        setTimeout(onSwipeDone,150);
+      } else {
+        inner.style.transform='';
+      }
+    });
+    inner.addEventListener('mouseleave',()=>{
+      if(swiping){swiping=false;inner.style.transform='';}
+    });
+  });
+}
+
+function renderImport(){
+  return`${lbar()}
+<span class="back" onclick="go('home')">${t('back')}</span>
+<div class="atitle">${t('impTitle')}</div>
+<div style="font-size:12px;color:#aaa;margin-bottom:11px;">${t('impSub')}</div>
+<textarea id="imp-in" class="ta" style="height:74px;" placeholder="${t('codePh')}"></textarea>
+<div class="acts">
+  <button class="btn" onclick="go('home')">${t('cancel')}</button>
+  <button class="btnf" onclick="doImport()">${t('confirm')}</button>
+</div>
+${S.toast?`<div class="toast">${S.toast}</div>`:''}`;
+}
+
+function renderCreate(){
+  const isFirst=S.letters.sent.length===0;
+  if(isFirst) S.createMode='q';
+  const mode=S.createMode||'q';
+  const mQ=mode==='q';
+  return`${lbar()}
+<span class="back" onclick="go('home')">${t('back')}</span>
+<div class="atitle">${t('nbTitle')}</div>
+${isFirst
+  ?`<div class="fnote">${t('ffixed')}</div>
+    <div style="font-size:13px;color:#1a1a18;padding:4px 0;margin-bottom:16px;letter-spacing:0.02em;">${TR[lang].fm}</div>
+    <div class="fnote" style="margin-bottom:13px;">${t('fnote')}</div>`
+  :`<div class="lbl" style="margin-bottom:5px;">${t('titleLbl')}</div>
+    <input id="c-title" class="inp" style="margin-bottom:17px;" placeholder="${t('titlePh')}" />`}
+${!isFirst?`${!isFirst?`<div style="display:flex;gap:0;border:0.5px solid #e0e0e0;margin-bottom:16px;width:100%;">
+  <button onclick="setCreateMode('q')" style="flex:1;font-family:'Courier Prime',Courier,monospace;font-size:11px;letter-spacing:0.06em;padding:8px;border:none;background:${mQ?'#1a1a18':'none'};color:${mQ?'#fff':'#999'};cursor:pointer;border-right:0.5px solid #e0e0e0;">${t('modeQ')}</button>
+  <button onclick="setCreateMode('letter')" style="flex:1;font-family:'Courier Prime',Courier,monospace;font-size:11px;letter-spacing:0.06em;padding:8px;border:none;background:${!mQ?'#1a1a18':'none'};color:${!mQ?'#fff':'#999'};cursor:pointer;">${t('modeLetter')}</button>
+</div>
+<div style="font-size:10px;color:#bbb;letter-spacing:0.04em;margin-bottom:12px;font-family:'Courier Prime',Courier,monospace;">${mQ?t('modeQDesc'):t('modeLetterDesc')}</div>`
+:''}`:''}
+${mQ
+  ?`<div id="q-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:4px;"></div>
+    <div class="acts">
+      <button class="btn" onclick="addQ()">${t('addQ')}</button>
+      <button class="btnf" onclick="submitCreate()">${t('create')}</button>
+    </div>`
+  :`<div style="position:relative;">
+      <textarea id="letter-body" class="ta" rows="8" maxlength="300" oninput="updateCharCount()" placeholder="${t('writePh')}"></textarea>
+      <div id="char-count" style="font-size:10px;color:#bbb;text-align:right;margin-top:4px;font-family:'Courier Prime',Courier,monospace;">${tc('charLeft',300)}</div>
+    </div>
+    <div class="acts">
+      <button class="btnf" onclick="submitCreate()">${t('create')}</button>
+    </div>`
+}
+<button class="btn" style="margin-top:8px;width:100%;text-align:center;" onclick="go('home')">${t('cancel')}</button>
+${S.toast?`<div class="toast">${S.toast}</div>`:''}`;
+}
+
+function renderViewR(){
+  const idx=S.sub,l=S.letters.received[idx];
+  if(!l){go('home');return'';}
+  const fm=isFM(l.title);
+  const allDone=l.questions.every(q=>q.unlockedAt&&q.answer);
+  syncTokens();
+
+  return`${lbar()}
+<span class="back" onclick="go('home')">${t('back')}</span>
+<div class="atitle">${l.title}${fm?` <span class="badge">FIRST</span>`:''}</div>
+${fm?`<div class="fnote">${t('fnote')}</div>`:''}
+${l.questions.map((q,i)=>{
+  const pOk=i===0||l.questions[i-1].unlockedAt;
+  const canOpen=!q.unlockedAt&&pOk;
+  const blocked=!q.unlockedAt&&!pOk;
+  return`<div class="qb">
+    <div class="qn">${t('qnum')} ${String(i+1).padStart(2,'0')}</div>
+    ${q.unlockedAt
+      ?`<div class="qt">${q.text}</div>
+        <div style="margin-top:8px;">
+          ${q.answer
+            ?`<div style="font-size:10px;letter-spacing:0.08em;color:${AC};margin-bottom:3px;font-family:'Courier Prime',Courier,monospace;">${t('yourAns')}</div><div class="ab">${q.answer}</div>`
+            :`<textarea class="ta" id="ans-${i}" rows="3" placeholder="${t('writePh')}"></textarea>
+              <div style="margin-top:5px;"><button class="btna" onclick="saveAnsUI(${idx},${i})">${t('saveAns')}</button></div>`}
+        </div>`
+      :blocked
+        ?`<div class="qt lk">${t('locked')}</div>`
+        :`<div class="qt lk">${t('sealed')}</div>
+          <div style="margin-top:7px;">
+            <button class="btn" onclick="doUnlock(${idx},${i})">${fm?t('openNow'):t('openWait')}</button>
+            ${!fm?`<span style="font-size:10px;color:#bbb;margin-left:8px;font-family:'Courier Prime',Courier,monospace;">${tc('tokenWrite','')} ${G.writeTokens}</span>`:''}
+          </div>`
+    }
+  </div>`;
+}).join('')}
+${allDone?`<div class="hr"></div>
+  <div style="font-size:11px;letter-spacing:0.03em;color:${AC};margin-bottom:7px;font-family:'Courier Prime',Courier,monospace;">${t('allAns')}</div>
+  <button class="btna" onclick="copyCode(S.letters.received[${idx}])">${t('expReply')}</button>`:''}
+<div class="hr"></div>
+${arcWidget()}
+${S.toast?`<div class="toast">${S.toast}</div>`:''}`;
+}
+
+function renderViewS(){
+  const idx=S.sub,l=S.letters.sent[idx];
+  if(!l){go('home');return'';}
+  syncTokens();
+
+  return`${lbar()}
+<span class="back" onclick="go('home')">${t('back')}</span>
+<div class="atitle">${l.title}</div>
+<div style="margin-bottom:13px;">
+  <button class="btn" onclick="copyCode(S.letters.sent[${idx}])">${t('copyBox')}</button>
+</div>
+${l.questions.map((q,i)=>{
+  const pR=i===0||l.questions[i-1].replyReadAt;
+  const canR=q.answer&&!q.replyReadAt&&pR;
+  return`<div class="qb">
+    <div class="qn">${t('qnum')} ${String(i+1).padStart(2,'0')}</div>
+    <div class="qt">${q.text}</div>
+    ${q.answer
+      ?q.replyReadAt
+        ?`<div style="margin-top:7px;">
+            <div style="font-size:10px;letter-spacing:0.08em;color:${AC};margin-bottom:3px;font-family:'Courier Prime',Courier,monospace;">${t('yourAns')}</div>
+            <div class="ab">${q.answer}</div>
+          </div>`
+        :canR
+          ?`<div style="margin-top:7px;display:flex;align-items:center;gap:10px;">
+              <button class="btn" onclick="doReadReply(${idx},${i})">${t('readReply')}</button>
+              <span style="font-size:10px;color:#bbb;font-family:'Courier Prime',Courier,monospace;">${tc('tokenRead','')} ${G.readTokens}</span>
+            </div>`
+          :`<div style="margin-top:5px;font-size:11px;color:#ccc;font-family:'Courier Prime',Courier,monospace;">${t('repWait')}</div>`
+      :`<div style="margin-top:5px;font-size:11px;color:#ccc;font-family:'Courier Prime',Courier,monospace;">${t('noReply')}</div>`
+    }
+  </div>`;
+}).join('')}
+<div class="hr"></div>
+${arcWidget()}
+${S.toast?`<div class="toast">${S.toast}</div>`:''}`;
+}
+
+
+function renderInbox(){
+  const{received}=S.letters;
+  return`${lbar()}
+<span class="back" onclick="go('home')">${t('back')}</span>
+<div class="atitle">${t('inbox')} — ${received.length}</div>
+<div style="overflow-y:auto;flex:1;margin:0 -22px;padding:0 22px;">
+${received.length===0?`<div style="font-size:12px;color:#ccc;padding:8px 0;">${t('empty')}</div>`:
+  received.map((l,i)=>{
+    const done=l.questions.filter(q=>q.unlockedAt).length,tot=l.questions.length;
+    const allA=l.questions.every(q=>q.unlockedAt&&q.answer);
+    return`<div class="swipe-wrap">
+      <div class="swipe-inner">
+        <div class="row" style="flex:1;min-width:calc(100% - 80px);" onclick="openReceived(${i})">
+          <div style="flex:1;">
+            <div class="rt">${l.title}${isFM(l.title)?` <span class="badge">FIRST</span>`:''}</div>
+            <div class="rs">${done}/${tot} ${t('opened')}${allA?' · '+t('allOpened'):''}</div>
+
+          </div>
+          <span style="font-size:12px;color:#bbb;margin-left:11px;">[→]</span>
+        </div>
+        <div class="swipe-del" onclick="askDelete('received','${l.id}')">DEL</div>
+      </div>
+    </div>`;
+  }).join('')}
+${S.toast?`<div class="toast">${S.toast}</div>`:''}
+</div>`;
+}
+
+function renderSentList(){
+  const{sent}=S.letters;
+  return`${lbar()}
+<span class="back" onclick="go('home')">${t('back')}</span>
+<div class="atitle">${t('sent')} — ${sent.length}</div>
+<div style="overflow-y:auto;flex:1;margin:0 -22px;padding:0 22px;">
+${sent.length===0?`<div style="font-size:12px;color:#ccc;padding:8px 0;">${t('empty')}</div>`:
+  sent.map((l,i)=>{
+    const hasUnread=l.questions&&l.questions.some(q=>q.answer&&!q.replyReadAt);
+    const rC=l.questions?l.questions.filter(q=>q.replyReadAt).length:0;
+    const totalQ=l.questions?l.questions.length:0;
+    return`<div class="swipe-wrap">
+      <div class="swipe-inner">
+        <div class="row" style="flex:1;min-width:calc(100% - 80px);padding-bottom:7px;" onclick="go('view-s',${i})">
+          <div style="flex:1;">
+            <div class="rt">${l.title}</div>
+            <div class="rs" style="${hasUnread?'color:#f59042;':''}">${totalQ} ${t('qs')}${hasUnread?` · ${t('newReply')}`:rC>0?` · ${rC} ${t('rr')}`:''}</div>
+          </div>
+          <button class="cpb" onclick="event.stopPropagation();copyCode(S.letters.sent[${i}])">[COPY]</button>
+        </div>
+        <div class="swipe-del" onclick="askDelete('sent','${l.id}')">DEL</div>
+      </div>
+    </div>`;
+  }).join('')}
+${S.toast?`<div class="toast">${S.toast}</div>`:''}
+</div>`;
+}
+
+/* ══════════ RENDER ══════════ */
+function renderConfirm(){
+  const {type,id}=S.confirm;
+  const arr=type==='received'?S.letters.received:S.letters.sent;
+  const letter=arr.find(l=>String(l.id)===String(id));
+  const title=letter?letter.title:'?';
+  return`<div style="padding:40px 0 20px;">
+    <div style="background:#fff;border:0.5px solid #e0e0e0;padding:24px 20px;font-family:'Courier Prime',Courier,monospace;">
+      <div style="font-size:12px;letter-spacing:0.04em;color:#1a1a18;margin-bottom:10px;line-height:1.6;">${t('delQ')}</div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:20px;letter-spacing:0.03em;">"${title}"</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" style="flex:1;" onclick="confirmNo()">${t('delNo')}</button>
+        <button class="btnf" style="flex:1;background:#e24b4a;border:none;" onclick="confirmYes()">${t('delYes')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function render(){
+  const el=document.getElementById('root');
+  let html='';
+  if(S.confirm){
+    html=lbar()+renderConfirm();
+  } else if(S.view==='home')html=renderHome();
+  else if(S.view==='inbox')html=renderInbox();
+  else if(S.view==='sent-list')html=renderSentList();
+  else if(S.view==='import')html=renderImport();
+  else if(S.view==='create')html=renderCreate();
+  else if(S.view==='view-r')html=renderViewR();
+  else if(S.view==='view-s')html=renderViewS();
+  el.innerHTML=html;
+  el.className='frame'+(lang==='jp'?' jp':lang==='kr'?' kr':'');
+  if(S.view==='create'&&!S.confirm)addQ();
+  requestAnimationFrame(drawArc);
+  if((S.view==='home'||S.view==='inbox'||S.view==='sent-list')&&!S.confirm) setTimeout(bindSwipes,0);
+}
+
+lsLoad();render();showOnboarding();
+if(_al)clearInterval(_al);
+_al=setInterval(()=>{syncTokens();drawArc();},1000);
+</script>
+</body>
+</html>
