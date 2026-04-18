@@ -2,16 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Slow Letter">
+<meta name="theme-color" content="#ffffff">
+
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAACLUlEQVR42u3TQQrCQBQFQY8h3v+eI+5ExBhiiJmuRS0yZPV5fRljXI50u10HXUfvz8hJx2HwpIMwfNIhGD7pEAyfdAjGTzoC4ycdgeGTDsH4SUdg/KQjMH7SEQgAARg/1QiMn3QExk86AgEgAOOnGoEAEIDxU41AAAjA+KlGIAAEIAAE4ChUA3AQqhEIAAE4BgIAAYAAQACQCMAhKBMAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgABAACAAEAAIAAQAAgABgAAQgCMgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAAEAAIAAYAAQAAgABAACAABOAQCAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAAgABAACAAGAAEAAIAAQAPxTAGOIgKbH9gWAABwDAYAAQAAgAMgEIAKK4xcAAhAAAhAA9QBEQG38AkAAzx8ioDR+ASCA1wcRUBm/ABDAu0cRUBj/xwBEwOzjXwxABMw8fgEggKUfRMCs4/86ABEw4/hXBSACZhv/6gCEwCzD3xSACJhh/JsCEAFnH//mAITAWYf/0wCEwNmGv0sAQuAsw981AEHwr4M/JABxcOTIP7kDJen1scg5Xo8AAAAASUVORK5CYII=">
+
 <title>Slow Letter</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Noto+Serif+JP:wght@400;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{--a:#f59042;--ink:#1a1a18;--bg:#fff;--f:'Courier Prime',Courier,monospace;}
-html,body{height:100%;}
+html,body{height:100%;overscroll-behavior:none;}
 body{background:#fff;display:flex;justify-content:center;align-items:stretch;margin:0;}
-.frame{background:#fff;width:100%;max-width:480px;min-height:100vh;display:flex;flex-direction:column;padding:48px 22px 48px;font-family:var(--f);color:#1a1a18;position:relative;}
+.frame{background:#fff;width:100%;max-width:480px;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;padding:max(48px,env(safe-area-inset-top)) 22px max(48px,env(safe-area-inset-bottom));font-family:var(--f);color:#1a1a18;position:relative;}
 .frame.jp{--f:'Noto Serif JP',serif;}
 .frame.kr{--f:'Noto Serif KR',serif;}
 /* JP/KR: Noto Serif 폰트의 넓은 줄높이를 EN(Courier Prime)과 동일하게 맞춤 */
@@ -1099,6 +1107,48 @@ function render(){
 lsLoad();render();showOnboarding();
 if(_al)clearInterval(_al);
 _al=setInterval(()=>{syncTokens();drawArc();},1000);
+</script>
+
+<script>
+(function(){
+  // manifest inline
+  const manifest={
+    name:'Slow Letter',short_name:'Slow Letter',
+    description:'천천히, 서로에게 스며드는 시간',
+    start_url:location.href,
+    display:'standalone',
+    background_color:'#ffffff',theme_color:'#ffffff',
+    orientation:'portrait'
+  };
+  const mBlob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  const mUrl=URL.createObjectURL(mBlob);
+  const link=document.createElement('link');
+  link.rel='manifest';link.href=mUrl;
+  document.head.appendChild(link);
+
+  // service worker inline
+  if('serviceWorker' in navigator){
+    const swCode=`
+const CACHE='sl-v1';
+self.addEventListener('install',e=>{self.skipWaiting();});
+self.addEventListener('activate',e=>{self.clients.claim();});
+self.addEventListener('fetch',e=>{
+  e.respondWith(
+    caches.open(CACHE).then(cache=>
+      cache.match(e.request).then(r=>{
+        const fetch_=fetch(e.request).then(res=>{
+          cache.put(e.request,res.clone());return res;
+        }).catch(()=>r);
+        return r||fetch_;
+      })
+    )
+  );
+});`;
+    const swBlob=new Blob([swCode],{type:'application/javascript'});
+    const swUrl=URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swUrl,{scope:'./'}).catch(()=>{});
+  }
+})();
 </script>
 </body>
 </html>
