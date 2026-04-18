@@ -34,7 +34,7 @@ body{background:#fff;display:flex;justify-content:center;align-items:stretch;mar
 .frame.jp .arc-notstarted,.frame.kr .arc-notstarted{font-size:11px;line-height:1.3;}
 .frame.jp .arct,.frame.kr .arct{font-size:18px;}
 /* 언어 선택 */
-.lbar{display:flex;width:fit-content;border:0.5px solid #e0e0e0;margin-bottom:14px;}
+.lbar{display:flex;width:fit-content;border:0.5px solid #e0e0e0;margin-bottom:0;}
 .lb{font-family:'Courier Prime',Courier,monospace;font-size:12px;letter-spacing:0.1em;padding:7px 16px;border:none;background:none;cursor:pointer;color:#999;border-right:0.5px solid #e0e0e0;}
 .lb:last-child{border-right:none;}
 .lb.on{background:#1a1a18;color:#fff;}
@@ -102,17 +102,18 @@ body{background:#fff;display:flex;justify-content:center;align-items:stretch;mar
 
 /* onboarding */
 .ob-overlay{position:fixed;inset:0;background:rgba(26,26,24,0.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;}
-.ob-card{background:#fff;width:100%;max-width:340px;padding:28px 24px 22px;font-family:'Courier Prime',Courier,monospace;display:flex;flex-direction:column;}
-.ob-tag{font-size:10px;letter-spacing:0.14em;color:#f59042;margin-bottom:16px;}
-.ob-title{font-size:20px;font-weight:700;letter-spacing:0.02em;color:#1a1a18;margin-bottom:8px;line-height:1.2;}
-.ob-sub{font-size:12px;color:#aaa;margin-bottom:16px;font-style:italic;line-height:1.5;}
-.ob-body{font-size:11px;color:#444;line-height:1.9;letter-spacing:0.01em;}
-.ob-footer{display:flex;justify-content:space-between;align-items:center;margin-top:22px;}
+.ob-card{background:#fff;width:100%;max-width:340px;padding:32px 24px 28px;font-family:'Courier Prime',Courier,monospace;display:flex;flex-direction:column;}
+.ob-tag{font-size:10px;letter-spacing:0.14em;color:#f59042;margin-bottom:20px;}
+.ob-title{font-size:16px;font-weight:700;letter-spacing:0.02em;color:#1a1a18;margin-bottom:10px;line-height:1.2;}
+.ob-sub{font-size:11px;color:#aaa;margin-bottom:20px;font-style:italic;line-height:1.5;}
+.ob-body{font-size:11px;color:#444;line-height:2.2;letter-spacing:0.01em;}
+.ob-footer{display:flex;justify-content:space-between;align-items:center;margin-top:28px;}
 .ob-dots{display:flex;gap:5px;align-items:center;}
 .ob-dot{width:18px;height:2px;background:#eee;transition:background .3s;}
 .ob-dot.active{background:#1a1a18;}
 .ob-next{background:none;border:none;cursor:pointer;color:#1a1a18;font-size:20px;padding:6px 0 6px 12px;font-family:'Courier Prime',Courier,monospace;line-height:1;}
 .ob-skip{font-size:10px;letter-spacing:0.08em;color:#bbb;cursor:pointer;background:none;border:none;font-family:'Courier Prime',Courier,monospace;padding:0;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
 </style>
 </head>
 <body>
@@ -127,7 +128,7 @@ en:{
   inbox:'INBOX',sent:'SENT',empty:'— EMPTY —',opened:'OPENED',
   qs:'QUESTIONS',rr:'REPLIES READ',back:'[←] BACK',
   nbTitle:'NEW BOX',titleLbl:'TITLE',titlePh:'YOUR TITLE',
-  qsLbl:'QUESTIONS',addQ:'+ ADD',create:'CREATE [→]',cancel:'CANCEL',
+  qsLbl:'QUESTIONS',addQ:'+ ADD',create:'FINISH [→]',cancel:'CANCEL',
   modeQ:'Questions',modeLetter:'Letter',
   modeQDesc:'Up to 10 questions, one revealed per day.',
   modeLetterDesc:'Free writing up to 300 characters.',
@@ -161,7 +162,7 @@ jp:{
   inbox:'受信箱',sent:'送信済み',empty:'— 空です —',opened:'開封',
   qs:'質問',rr:'返信既読',back:'[←] 戻る',
   nbTitle:'新しい質問封筒',titleLbl:'タイトル',titlePh:'タイトルを入力',
-  qsLbl:'質問',addQ:'+ 追加',create:'作成 [→]',cancel:'キャンセル',
+  qsLbl:'質問',addQ:'+ 追加',create:'書き終わり [→]',cancel:'キャンセル',
   modeQ:'質問形式',modeLetter:'手紙形式',
   modeQDesc:'最大10問、1日1問ずつ開封。',
   modeLetterDesc:'300文字まで自由に書けます。',
@@ -195,7 +196,7 @@ kr:{
   inbox:'받은 편지함',sent:'보낸 편지함',empty:'— 비어있어요 —',opened:'열람',
   qs:'질문',rr:'답변 열람',back:'[←] 뒤로',
   nbTitle:'새 질문 상자',titleLbl:'제목',titlePh:'제목을 입력하세요',
-  qsLbl:'질문',addQ:'+ 추가',create:'만들기 [→]',cancel:'취소',
+  qsLbl:'질문',addQ:'+ 추가',create:'작성완료 [→]',cancel:'취소',
   modeQ:'질문 형식',modeLetter:'편지 형식',
   modeQDesc:'최대 10개 질문, 하루 1개씩 열람.',
   modeLetterDesc:'300자까지 자유롭게 쓸 수 있어요.',
@@ -239,44 +240,54 @@ const isFM=title=>fmNames().includes(title);
 
 
 /* ── Onboarding ── */
-const OB_PAGES = [
-  {
-    tag:'01 / 06',
-    title:'Slow Letter',
-    sub:'"천천히, 서로에게 스며드는 시간"',
-    body:'「Slow letter」는 24시간의 기다림을 통해 상대의 생각을 하나씩 꺼내 보는 설렘을 선물합니다.\n하루에 하나씩 잠금이 해제되는 질문을 통해, 상대의 생각을 차분히 마주해 보세요.\n서두르지 않아도 괜찮습니다. 적당한 간격이 주는 즐거움이 우리를 더 가깝게 만들 테니까요.'
-  },
-  {
-    tag:'02 / 06',
-    title:'New Letter',
-    sub:'"질문의 시작"',
-    body:'New Letter에서 상대에게 보내고 싶은 질문 리스트를 작성하세요.\n작성이 완료되면 고유 코드가 생성됩니다. 이 코드를 복사해서 상대에게 전달하면 준비는 끝납니다.\n내가 보낸 질문들은 Sent 보관함에서 언제든 다시 확인할 수 있습니다.'
-  },
-  {
-    tag:'03 / 06',
-    title:'Import Code',
-    sub:'"코드 입력"',
-    body:'상대에게 받은 코드를 Import 메뉴에 입력하세요.\n이제 해당 편지는 당신의 Inbox에 보관됩니다.\n앱 하단의 타이머는 당신이 답변하거나 읽을 수 있는 다음 기점을 가리키기 시작합니다.'
-  },
-  {
-    tag:'04 / 06',
-    title:'24 Hours',
-    sub:'"하루에 하나씩"',
-    body:'질문지를 받으면 24시간에 하나씩만 답변을 작성할 수 있습니다.\n4개의 질문이 담긴 편지라면, 완성까지는 최소 4일의 시간이 필요합니다.\n쌓여가는 답변만큼 서로에 대해 더 깊이 이해하는 시간을 가져보세요.'
-  },
-  {
-    tag:'05 / 06',
-    title:'Reply',
-    sub:'"되돌아오는 진심"',
-    body:'모든 답변을 마치면 다시 코드를 생성해 상대에게 전달하세요.\n상대가 코드를 입력하면, 당신은 Sent 보관함에서 상대의 답변을 읽을 수 있게 됩니다.\n답변을 읽을 때도 동일하게 하루에 하나씩만 잠금이 해제됩니다.'
-  },
-  {
-    tag:'06 / 06',
-    title:'First Mail',
-    sub:'"시작의 예외, First Mail"',
-    body:'가장 처음 주고받는 편지는 제목이 First Mail로 고정됩니다.\n이 편지에 한해서만 대기 시간 없이 모든 질문에 즉시 답변할 수 있습니다.\n단, 전해 받은 답변을 읽을 때는 다시 24시간의 간격이 적용됩니다.'
-  }
-];
+const OB_DATA = {
+  kr: [
+    {tag:'01 / 06',title:'Slow Letter',sub:'"천천히, 서로에게 스며드는 시간"',
+     body:'24시간의 기다림을 통해\n상대의 생각을 하루 하나씩 꺼내 보는 설렘을 선물합니다.\n서두르지 않아도 괜찮습니다.\n적당한 간격이 주는 잔잔한 설레임을 즐겨보세요.'},
+    {tag:'02 / 06',title:'New Letter',sub:'"이야기의 시작"',
+     body:'New Letter 에서,\n상대에게 보내고 싶은 이야기를 작성하세요.\n작성이 완료되면 고유 코드가 생성됩니다.\n이 코드를 복사해서 상대에게 전달해주세요.\n내가 보낸 편지는 Sent 보관함에서\n언제든 다시 확인할 수 있습니다.'},
+    {tag:'03 / 06',title:'Import Code',sub:'"편지, 답장 받기"',
+     body:'상대에게 받은 코드를 Import code에서 입력하세요.\n이제 해당 편지는 당신의 Inbox에 보관됩니다.\nInbox에서 받은 편지의 답장을 적어주세요.\n입력이 끝나면 다시 답신 코드를 복사후,\n상대방에게 전달 해 주세요.'},
+    {tag:'04 / 06',title:'24 Hours',sub:'"One step every day."',
+     body:'질문지를 받으면\n[24시간에 하나씩]만 답변을 작성할 수 있습니다.\n4개의 질문이 담긴 편지라면,\n완성까지는 최소 4일의 시간이 필요합니다.\n기다림이 주는 설레임을 즐겨주세요.'},
+    {tag:'05 / 06',title:'Reply',sub:'"A heart returned."',
+     body:'상대의 reply 코드를 입력하면,\n나의 Sent 보관함에서 상대의 답변을\n읽을 수 있게 됩니다.\n답변을 읽을 때도 하루에 하나씩만\n잠금이 해제됩니다.'},
+    {tag:'06 / 06',title:'First Mail',sub:'"시작의 예외, First Mail"',
+     body:'가장 처음 주고받는 편지는,\nFirst Mail 제목의 질문형식으로 고정됩니다.\nFirst Mail은 대기 시간 없이\n바로 모든 답신을 작성 할 수 있습니다.\n단, 전해 받은 답신을 읽을 때는\n다시 24시간의 기다림이 적용됩니다.'}
+  ],
+  jp: [
+    {tag:'01 / 06',title:'時差の手紙',sub:'"ゆっくり、溶け合うひととき"',
+     body:'24時間の待機を通じて、\n相手の想いを1日一つずつ紐解くときめきを贈ります。\n急がなくても大丈夫です。\n適度な間隔がもたらす、\n穏やかな余韻をお楽しみください。'},
+    {tag:'02 / 06',title:'新しい手紙',sub:'"質問の始まり"',
+     body:'新しい手紙で、\n相手に届けたい言葉を綴りましょう。\n作成が終わると固有のコードが生成されます。\nこのコードをコピーして相手に伝えてください。\n送った手紙は「送信済み」でいつでも確認できます。'},
+    {tag:'03 / 06',title:'コード読込',sub:'"コード入力"',
+     body:'相手から受け取ったコードを\n「コード読込」に入力してください。\n手紙はあなたの「受信箱」に保管されます。\n届いた手紙に返信を書き、\n書き終わったら再び返信コードをコピーして\n相手に届けてください。'},
+    {tag:'04 / 06',title:'24時間タイマー',sub:'"一日に一つずつ"',
+     body:'質問を受け取ると、\n「24時間に一つ」だけ回答を書くことができます。\n4つの質問がある手紙なら、\n完成まで最低4日が必要です。\n待つ時間が生む、\n心地よい緊張感を楽しんでください。'},
+    {tag:'05 / 06',title:'返信',sub:'"届いた真心"',
+     body:'相手の返信コードを入力すると、\n「送信済み」にある自分の手紙から\n相手の回答を読めるようになります。\n回答を読む際も、\n1日に一つずつロックが解除されます。'},
+    {tag:'06 / 06',title:'最初の手紙',sub:'"はじまりの例外"',
+     body:'最初にやり取りする手紙は、\n「最初の手紙」というタイトルの質問形式に固定されます。\n「最初の手紙」に限り、\n待機時間なしですべての回答を\n一度に記入することが可能です。\nただし、届いた回答を読む際は\n再び24時間の待機が適用されます。'}
+  ],
+  en: [
+    {tag:'01 / 06',title:'Slow Letter',sub:'"A time to slowly soak into one another."',
+     body:'Experience the flutter of\nuncovering your partner\'s thoughts,\none day at a time, through a 24-hour wait.\nThere is no need to rush.\nSavor the gentle excitement found\nwithin the perfect distance.'},
+    {tag:'02 / 06',title:'New Letter',sub:'"Where the questions begin."',
+     body:'In New Letter, write the stories\nyou wish to share with your partner.\nOnce finished,\na unique code will be generated.\nCopy and send this code to them.\nYou can revisit the letters\nyou\'ve sent anytime in your Sent box.'},
+    {tag:'03 / 06',title:'Import Code',sub:'"Enter the code."',
+     body:'Enter the code\nyou received from your partner in Import Code.\nThe letter will now be kept in your Inbox.\nWrite your reply\nto the letter you\'ve received.\nWhen finished, copy the reply code\nand send it back to your partner.'},
+    {tag:'04 / 06',title:'24 Hours',sub:'"One step every day."',
+     body:'Once you receive a letter, you can answer\nonly [one question every 24 hours].\nIf a letter contains four questions,\nit will take at least four days to complete.\nPlease enjoy the sweet anticipation\nthat only waiting can bring.'},
+    {tag:'05 / 06',title:'Reply',sub:'"A heart returned."',
+     body:'Enter your partner\'s reply code to unlock\nand read their answers within your Sent box.\nEven when reading their responses,\neach answer will unlock only once every 24 hours.'},
+    {tag:'06 / 06',title:'First Mail',sub:'"The exception at the start"',
+     body:'The very first letter exchanged\nis fixed as a question-type letter\ntitled First Mail.\nFor First Mail only,\nyou can write all replies immediately\nwithout any waiting time.\nHowever, reading the replies\nstill requires 24 hours between each.'}
+  ]
+};
+
+function getObPages(){ return OB_DATA[obLang] || OB_DATA.kr; }
+const OB_SKIP={kr:'건너뛰기',jp:'スキップ',en:'Skip'};
+const OB_START={kr:'시작하기 →',jp:'はじめる →',en:'Get Started →'};
 
 let obPage = 0;
 
@@ -289,18 +300,19 @@ function renderOb(){
   const existing = document.getElementById('ob-overlay');
   if(existing) existing.remove();
 
-  const p = OB_PAGES[obPage];
-  const total = OB_PAGES.length;
-  const isLast = obPage === total - 1;
+  const pages=getObPages(); const p=pages[obPage];
+  const isLast=obPage===pages.length-1;
+  const dots=pages.map((_,i)=>`<div class="ob-dot${i===obPage?' active':''}"></div>`).join('');
+  function lt(l,label){
+    var col=obLang===l?'#1a1a18':'#ccc';
+    return '<button onclick="obLang=\''+l+'\';obPage=0;renderOb();" style="font-family:\'Courier Prime\',Courier,monospace;font-size:9px;letter-spacing:0.1em;border:none;background:none;cursor:pointer;padding:0 6px 0 0;color:'+col+';">'+label+'</button>';
+  }
 
-  const dots = OB_PAGES.map((_,i) =>
-    `<div class="ob-dot${i===obPage?' active':''}"></div>`
-  ).join('');
-
-  const el = document.createElement('div');
-  el.id = 'ob-overlay';
-  el.className = 'ob-overlay';
-  el.innerHTML = `<div class="ob-card">
+  const el=document.createElement('div');
+  el.id='ob-overlay';
+  el.className='ob-overlay';
+  el.innerHTML=`<div class="ob-card">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">${lt('en','EN')}${lt('jp','JP')}${lt('kr','KR')}</div>
     <div class="ob-tag">${p.tag}</div>
     <div class="ob-title">${p.title}</div>
     <div class="ob-sub">${p.sub}</div>
@@ -308,22 +320,28 @@ function renderOb(){
     <div class="ob-footer">
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
         <div class="ob-dots">${dots}</div>
-        <button class="ob-skip" onclick="closeOb()">${isLast?'시작하기':'건너뛰기'}</button>
+        ${!isLast?`<button class="ob-skip" onclick="closeOb()">${OB_SKIP[obLang]||'건너뛰기'}</button>`:''}
       </div>
-      ${!isLast?`<button class="ob-next" onclick="obNext()">→</button>`:''}
+      ${isLast
+        ?`<button class="ob-skip" style="color:#1a1a18;" onclick="closeOb()">${OB_START[obLang]||'시작하기 →'}</button>`
+        :`<button class="ob-next" onclick="obNext()">→</button>`}
     </div>
   </div>`;
   document.body.appendChild(el);
 }
 
 function obNext(){
-  if(obPage < OB_PAGES.length - 1){ obPage++; renderOb(); }
+  if(obPage < getObPages().length - 1){ obPage++; renderOb(); }
 }
 
 function closeOb(){
   const el = document.getElementById('ob-overlay');
   if(el) el.remove();
+  if(!localStorage.getItem('sl_ob_done')){
+    localStorage.setItem('sl_ob_just_done','1');
+  }
   localStorage.setItem('sl_ob_done','1');
+  render();
 }
 
 /* ── Storage ── */
@@ -711,10 +729,13 @@ function updateCharCount(){
 
 /* ══════════ LANG BAR ══════════ */
 function lbar(){
-  return`<div class="lbar">
-    <button class="lb${lang==='en'?' on':''}" onclick="setLang('en')">EN</button>
-    <button class="lb${lang==='jp'?' on':''}" onclick="setLang('jp')">JP</button>
-    <button class="lb${lang==='kr'?' on':''}" onclick="setLang('kr')">KR</button>
+  return`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div class="lbar" style="margin-bottom:0;">
+      <button class="lb${lang==='en'?' on':''}" onclick="setLang('en')">EN</button>
+      <button class="lb${lang==='jp'?' on':''}" onclick="setLang('jp')">JP</button>
+      <button class="lb${lang==='kr'?' on':''}" onclick="setLang('kr')">KR</button>
+    </div>
+    <button onclick="obPage=0;renderOb();" style="background:none;border:0.5px solid #e0e0e0;width:28px;height:28px;cursor:pointer;font-family:'Courier Prime',Courier,monospace;font-size:12px;color:#bbb;display:flex;align-items:center;justify-content:center;">?</button>
   </div>`;
 }
 
@@ -748,7 +769,10 @@ function renderHome(){
   const latestR=received[0], latestS=sent[0];
   return`${lbar()}
 <div class="atitle">${t('app')}</div>
-<div class="nav" onclick="go('create')">${t('newBox')}</div>
+<div class="nav" onclick="go('create');localStorage.removeItem('sl_ob_just_done');" style="display:flex;align-items:center;gap:10px;">
+  ${t('newBox')}
+  ${localStorage.getItem('sl_ob_just_done')?`<span style="color:#f59042;font-size:13px;animation:blink 1s step-start infinite;">←</span>`:''}
+</div>
 <div class="nav" onclick="go('import')">${t('imp')}</div>
 <div class="hr"></div>
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -1104,7 +1128,7 @@ function render(){
   if((S.view==='home'||S.view==='inbox'||S.view==='sent-list')&&!S.confirm) setTimeout(bindSwipes,0);
 }
 
-lsLoad();render();showOnboarding();
+lsLoad();obLang=lang;render();showOnboarding();
 if(_al)clearInterval(_al);
 _al=setInterval(()=>{syncTokens();drawArc();},1000);
 </script>
