@@ -119,6 +119,35 @@ body{background:#fff;display:flex;justify-content:center;align-items:stretch;mar
 <body>
 <div class="frame" id="root"></div>
 <script>
+/* ── Firebase REST API (SDK 없이 fetch만 사용) ── */
+const FB_URL='https://slow-letter-c6284-default-rtdb.firebaseio.com';
+
+function genShortId(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let id='';
+  for(let i=0;i<10;i++) id+=chars[Math.floor(Math.random()*chars.length)];
+  return id;
+}
+
+async function pushToFirebase(obj){
+  const id=genShortId();
+  const res=await fetch(FB_URL+'/letters/'+id+'.json',{
+    method:'PUT',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({data:JSON.stringify(obj),createdAt:Date.now()})
+  });
+  if(!res.ok) throw new Error('Firebase write failed: '+res.status);
+  return id;
+}
+
+async function fetchFromFirebase(id){
+  const res=await fetch(FB_URL+'/letters/'+id+'.json');
+  if(!res.ok) return null;
+  const val=await res.json();
+  if(!val||!val.data) return null;
+  return JSON.parse(val.data);
+}
+
 const WAIT=864e5, AC='#f59042';
 
 /* ── i18n ── */
@@ -277,11 +306,11 @@ const OB_DATA = {
     {tag:'03 / 06',title:'Import Code',sub:'"Enter the code."',
      body:'Enter the code\nyou received from your partner in Import Code.\nThe letter will now be kept in your Inbox.\nWrite your reply\nto the letter you\'ve received.\nWhen finished, copy the reply code\nand send it back to your partner.'},
     {tag:'04 / 06',title:'24 Hours',sub:'"One step every day."',
-     body:'Once you receive a letter, you can answer\nonly [one question every 24 hours].\nIf a letter contains four questions,\nit will take at least four days to complete.\nPlease enjoy the sweet anticipation\nthat only waiting can bring.'},
+     body:'Once you receive a letter, you can answer\nonly [one question every 24 hours].\nIf a letter contains four questions,\nit will take at least four days.\nPlease enjoy the sweet anticipation\nthat only waiting can bring.'},
     {tag:'05 / 06',title:'Reply',sub:'"A heart returned."',
-     body:'Enter your partner\'s reply code to unlock\nand read their answers within your Sent box.\nEven when reading their responses,\neach answer will unlock only once every 24 hours.'},
-    {tag:'06 / 06',title:'First Mail',sub:'"The exception at the start"',
-     body:'The very first letter exchanged\nis fixed as a question-type letter\ntitled First Mail.\nFor First Mail only,\nyou can write all replies immediately\nwithout any waiting time.\nHowever, reading the replies\nstill requires 24 hours between each.'}
+     body:'Enter your partner\'s reply code\nto unlock and read their answers\nwithin your Sent box.\nEven when reading their responses,\neach answer will unlock\nonly once every 24 hours.'},
+    {tag:'06 / 06',title:'First Mail',sub:'"The exception to the start: First Mail."',
+     body:'The very first exchange is fixed as\na set of questions titled First Mail.\nFor the First Mail only,\nyou can write all your answers\nimmediately without any waiting time.\nHowever, the 24-hour rule will still apply\nwhen your partner reads\nthe reply you\'ve sent.'}
   ]
 };
 
@@ -640,11 +669,26 @@ async function decompressFull(code){
   return new TextDecoder().decode(out);
 }
 async function copyCode(obj){
-  const json=JSON.stringify(deflate(obj));
-  const code=await compress(json);
+  showToast('...');
+  try{
+    const id=await pushToFirebase(deflate(obj));
+    await copyToClipboard(id);
+    showToast(t('copied'));
+  }catch(e){
+    showToast(lang==='kr'?'네트워크 오류. 인터넷 연결을 확인해주세요.':lang==='jp'?'ネットワークエラー。接続を確認してください。':'Network error. Please check your connection.');
+  }
+}
+async function copyToClipboard(text){
   if(navigator.clipboard&&window.isSecureContext){
-    navigator.clipboard.writeText(code).then(()=>showToast(t('copied'))).catch(()=>fallbackCopy(code));
-  } else { fallbackCopy(code); }
+    await navigator.clipboard.writeText(text).catch(()=>_execCopy(text));
+  } else { _execCopy(text); }
+}
+function _execCopy(text){
+  const el=document.createElement('textarea');
+  el.value=text;el.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;';
+  document.body.appendChild(el);el.focus();el.select();
+  try{document.execCommand('copy');}catch(e){prompt('코드를 복사하세요:',text);}
+  document.body.removeChild(el);
 }
 function fallbackCopy(text){
   const el=document.createElement('textarea');
@@ -656,16 +700,23 @@ function fallbackCopy(text){
 }
 async function doImport(){
   const raw=document.getElementById('imp-in')?.value||'';
+  const raw2=raw.trim();
+  if(!raw2){showToast(t('invalid'));return;}
   try{
-    const raw2=raw.trim();
     let parsed;
-    try{
-      /* 신형: deflate-raw 압축 */
-      const jsonStr=await decompressFull(raw2);
-      parsed=JSON.parse(jsonStr);
-    }catch(e2){
-      /* 구형: encodeURIComponent+btoa */
-      parsed=JSON.parse(decodeURIComponent(atob(raw2)));
+    /* 10자리 단축코드 → Firebase 조회 */
+    if(/^[A-Za-z2-9]{10}$/.test(raw2)){
+      const fbData=await fetchFromFirebase(raw2);
+      if(!fbData){showToast(t('invalid'));return;}
+      parsed=fbData;
+    } else {
+      /* 기존 긴 코드 방식 */
+      try{
+        const jsonStr=await decompressFull(raw2);
+        parsed=JSON.parse(jsonStr);
+      }catch(e2){
+        parsed=JSON.parse(decodeURIComponent(atob(raw2)));
+      }
     }
     const dec=inflate(parsed);
     const hasAns=dec.questions&&dec.questions.some(q=>q.answer);
