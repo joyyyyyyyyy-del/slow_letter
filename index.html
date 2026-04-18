@@ -131,12 +131,20 @@ function genShortId(){
 
 async function pushToFirebase(obj){
   const id=genShortId();
-  const res=await fetch(FB_URL+'/letters/'+id+'.json',{
-    method:'PUT',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({data:JSON.stringify(obj),createdAt:Date.now()})
-  });
-  if(!res.ok) throw new Error('Firebase write failed: '+res.status);
+  let res;
+  try{
+    res=await fetch(FB_URL+'/letters/'+id+'.json',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({data:JSON.stringify(obj),createdAt:Date.now()})
+    });
+  }catch(fetchErr){
+    throw new Error('fetch failed: '+fetchErr.message);
+  }
+  if(!res.ok){
+    const txt=await res.text().catch(()=>'');
+    throw new Error('HTTP '+res.status+': '+txt.slice(0,80));
+  }
   return id;
 }
 
@@ -675,7 +683,7 @@ async function copyCode(obj){
     await copyToClipboard(id);
     showToast(t('copied'));
   }catch(e){
-    showToast(lang==='kr'?'네트워크 오류. 인터넷 연결을 확인해주세요.':lang==='jp'?'ネットワークエラー。接続を確認してください。':'Network error. Please check your connection.');
+    showToast('ERR: '+e.message);
   }
 }
 async function copyToClipboard(text){
