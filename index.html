@@ -680,38 +680,27 @@ async function copyCode(obj){
   showToast('...');
   try{
     const id=await pushToFirebase(deflate(obj));
-    /* iOS Safari: async 후 clipboard 차단 → prompt로 표시 */
-    const copied=await tryClipboard(id);
-    if(copied){
-      showToast(t('copied'));
+    if(navigator.clipboard&&window.isSecureContext){
+      navigator.clipboard.writeText(id).then(()=>showToast(t('copied'))).catch(()=>{
+        _execCopy(id);showToast(t('copied'));
+      });
     } else {
-      prompt(lang==='kr'?'코드를 복사하세요:':lang==='jp'?'コードをコピーしてください:':'Copy this code:', id);
-      showToast(t('copied'));
+      _execCopy(id);showToast(t('copied'));
     }
   }catch(e){
     showToast('ERR: '+e.message);
   }
 }
-async function tryClipboard(text){
-  try{
-    if(navigator.clipboard&&window.isSecureContext){
-      await navigator.clipboard.writeText(text);
-      return true;
-    }
-  }catch(e){}
-  /* execCommand fallback */
-  try{
-    const el=document.createElement('textarea');
-    el.value=text;
-    el.style.cssText='position:fixed;top:0;left:0;opacity:0.01;font-size:16px;';
-    document.body.appendChild(el);
-    el.focus();el.select();
-    const ok=document.execCommand('copy');
-    document.body.removeChild(el);
-    if(ok) return true;
-  }catch(e){}
-  return false;
+function _execCopy(text){
+  const el=document.createElement('textarea');
+  el.value=text;
+  el.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;';
+  document.body.appendChild(el);
+  el.focus();el.select();
+  try{document.execCommand('copy');}catch(e){}
+  document.body.removeChild(el);
 }
+
 function fallbackCopy(text){
   const el=document.createElement('textarea');
   el.value=text;el.style.cssText='position:fixed;top:-9999px;left:-9999px;opacity:0;';
