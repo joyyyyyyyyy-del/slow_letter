@@ -676,20 +676,25 @@ async function decompressFull(code){
   let o=0;for(const p of parts){out.set(p,o);o+=p.length;}
   return new TextDecoder().decode(out);
 }
-async function copyCode(obj){
+function copyCode(obj){
+  /* 1. 클릭 즉시(동기) 임시 텍스트 복사 — 제스처 컨텍스트 유지 */
+  const tempId='uploading...';
+  _execCopy(tempId);
+
+  /* 2. Firebase 업로드 후 실제 ID로 교체 복사 */
   showToast('...');
-  try{
-    const id=await pushToFirebase(deflate(obj));
+  pushToFirebase(deflate(obj)).then(id=>{
+    /* clipboard API 재시도 (일부 브라우저 허용) */
     if(navigator.clipboard&&window.isSecureContext){
-      navigator.clipboard.writeText(id).then(()=>showToast(t('copied'))).catch(()=>{
-        _execCopy(id);showToast(t('copied'));
-      });
+      navigator.clipboard.writeText(id)
+        .then(()=>showToast(t('copied')))
+        .catch(()=>showCodePopup(id));
     } else {
-      _execCopy(id);showToast(t('copied'));
+      showCodePopup(id);
     }
-  }catch(e){
+  }).catch(e=>{
     showToast('ERR: '+e.message);
-  }
+  });
 }
 function _execCopy(text){
   const el=document.createElement('textarea');
@@ -699,6 +704,23 @@ function _execCopy(text){
   el.focus();el.select();
   try{document.execCommand('copy');}catch(e){}
   document.body.removeChild(el);
+}
+function showCodePopup(code){
+  /* 앱 내 코드 표시 — 길게 눌러 복사 */
+  const existing=document.getElementById('code-popup');
+  if(existing) existing.remove();
+  const el=document.createElement('div');
+  el.id='code-popup';
+  el.style.cssText='position:fixed;inset:0;background:rgba(26,26,24,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;';
+  const closeLabel=lang==='kr'?'닫기':lang==='jp'?'閉じる':'Close';
+  const hint=lang==='kr'?'코드를 길게 눌러 복사하세요':lang==='jp'?'長押しでコピー':'Long-press to copy';
+  el.innerHTML=`<div style="background:#fff;padding:28px 22px 22px;width:100%;max-width:320px;font-family:'Courier Prime',Courier,monospace;">
+    <div style="font-size:11px;color:#aaa;margin-bottom:16px;letter-spacing:0.03em;">${hint}</div>
+    <div style="font-size:22px;font-weight:700;letter-spacing:0.14em;color:#1a1a18;text-align:center;padding:16px 0;border-top:0.5px solid #eee;border-bottom:0.5px solid #eee;margin-bottom:16px;user-select:all;-webkit-user-select:all;">${code}</div>
+    <button onclick="document.getElementById('code-popup').remove();" style="width:100%;font-family:'Courier Prime',Courier,monospace;font-size:11px;letter-spacing:0.06em;background:#1a1a18;border:none;padding:10px;cursor:pointer;color:#fff;">${closeLabel}</button>
+  </div>`;
+  document.body.appendChild(el);
+  el.onclick=(e)=>{if(e.target===el)el.remove();};
 }
 
 function fallbackCopy(text){
